@@ -9,6 +9,8 @@ export default {
   disabled: false,
   className: '',
   inputClassName: '',
+  suggestListClassName: '',
+  suggestItemClassName: '',
   location: null,
   radius: null,
   bounds: null,
