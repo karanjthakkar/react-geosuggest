@@ -49,73 +49,6 @@
 }());
 
 },{}],2:[function(require,module,exports){
-/**
- * Copyright (c) 2013-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @typechecks
- * 
- */
-
-/*eslint-disable no-self-compare */
-
-'use strict';
-
-var hasOwnProperty = Object.prototype.hasOwnProperty;
-
-/**
- * inlined Object.is polyfill to avoid requiring consumers ship their own
- * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/is
- */
-function is(x, y) {
-  // SameValue algorithm
-  if (x === y) {
-    // Steps 1-5, 7-10
-    // Steps 6.b-6.e: +0 != -0
-    return x !== 0 || 1 / x === 1 / y;
-  } else {
-    // Step 6.a: NaN == NaN
-    return x !== x && y !== y;
-  }
-}
-
-/**
- * Performs equality by iterating through keys on an object and returning false
- * when any key has values which are not strictly equal between the arguments.
- * Returns true when the values of all keys are strictly equal.
- */
-function shallowEqual(objA, objB) {
-  if (is(objA, objB)) {
-    return true;
-  }
-
-  if (typeof objA !== 'object' || objA === null || typeof objB !== 'object' || objB === null) {
-    return false;
-  }
-
-  var keysA = Object.keys(objA);
-  var keysB = Object.keys(objB);
-
-  if (keysA.length !== keysB.length) {
-    return false;
-  }
-
-  // Test for A's keys different from B.
-  for (var i = 0; i < keysA.length; i++) {
-    if (!hasOwnProperty.call(objB, keysA[i]) || !is(objA[keysA[i]], objB[keysA[i]])) {
-      return false;
-    }
-  }
-
-  return true;
-}
-
-module.exports = shallowEqual;
-},{}],3:[function(require,module,exports){
 (function (global){
 /**
  * lodash (Custom Build) <https://lodash.com/>
@@ -496,9 +429,9 @@ function toNumber(value) {
 module.exports = debounce;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],4:[function(require,module,exports){
+},{}],3:[function(require,module,exports){
 module.exports = require('react/lib/shallowCompare');
-},{"react/lib/shallowCompare":5}],5:[function(require,module,exports){
+},{"react/lib/shallowCompare":4}],4:[function(require,module,exports){
 /**
  * Copyright 2013-present, Facebook, Inc.
  * All rights reserved.
@@ -507,8 +440,7 @@ module.exports = require('react/lib/shallowCompare');
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
-* @providesModule shallowCompare
-*/
+ */
 
 'use strict';
 
@@ -524,7 +456,75 @@ function shallowCompare(instance, nextProps, nextState) {
 }
 
 module.exports = shallowCompare;
-},{"fbjs/lib/shallowEqual":2}],6:[function(require,module,exports){
+},{"fbjs/lib/shallowEqual":5}],5:[function(require,module,exports){
+/**
+ * Copyright (c) 2013-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
+ *
+ * @typechecks
+ * 
+ */
+
+/*eslint-disable no-self-compare */
+
+'use strict';
+
+var hasOwnProperty = Object.prototype.hasOwnProperty;
+
+/**
+ * inlined Object.is polyfill to avoid requiring consumers ship their own
+ * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/is
+ */
+function is(x, y) {
+  // SameValue algorithm
+  if (x === y) {
+    // Steps 1-5, 7-10
+    // Steps 6.b-6.e: +0 != -0
+    // Added the nonzero y check to make Flow happy, but it is redundant
+    return x !== 0 || y !== 0 || 1 / x === 1 / y;
+  } else {
+    // Step 6.a: NaN == NaN
+    return x !== x && y !== y;
+  }
+}
+
+/**
+ * Performs equality by iterating through keys on an object and returning false
+ * when any key has values which are not strictly equal between the arguments.
+ * Returns true when the values of all keys are strictly equal.
+ */
+function shallowEqual(objA, objB) {
+  if (is(objA, objB)) {
+    return true;
+  }
+
+  if (typeof objA !== 'object' || objA === null || typeof objB !== 'object' || objB === null) {
+    return false;
+  }
+
+  var keysA = Object.keys(objA);
+  var keysB = Object.keys(objB);
+
+  if (keysA.length !== keysB.length) {
+    return false;
+  }
+
+  // Test for A's keys different from B.
+  for (var i = 0; i < keysA.length; i++) {
+    if (!hasOwnProperty.call(objB, keysA[i]) || !is(objA[keysA[i]], objB[keysA[i]])) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+module.exports = shallowEqual;
+},{}],6:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -642,14 +642,12 @@ var Geosuggest = function (_React$Component) {
 
     _this.hideSuggests = function () {
       _this.props.onBlur(_this.state.userInput);
-      var timer = setTimeout(function () {
+      _this.timer = setTimeout(function () {
         _this.setState({
           isSuggestsHidden: true,
           activeSuggest: null
         });
       }, 100);
-
-      _this.setState({ timer: timer });
     };
 
     _this.selectSuggest = function (suggest) {
@@ -678,8 +676,7 @@ var Geosuggest = function (_React$Component) {
       isLoading: false,
       userInput: props.initialValue,
       activeSuggest: null,
-      suggests: [],
-      timer: null
+      suggests: []
     };
 
     _this.onInputChange = _this.onInputChange.bind(_this);
@@ -740,7 +737,7 @@ var Geosuggest = function (_React$Component) {
   }, {
     key: 'componentWillUnmount',
     value: function componentWillUnmount() {
-      clearTimeout(this.state.timer);
+      clearTimeout(this.timer);
     }
 
     /**
@@ -850,7 +847,7 @@ var Geosuggest = function (_React$Component) {
     value: function updateSuggests() {
       var _this3 = this;
 
-      var suggestsGoogle = arguments.length <= 0 || arguments[0] === undefined ? [] : arguments[0];
+      var suggestsGoogle = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
       var callback = arguments[1];
 
       var suggests = [],
@@ -897,7 +894,7 @@ var Geosuggest = function (_React$Component) {
   }, {
     key: 'updateActiveSuggest',
     value: function updateActiveSuggest() {
-      var suggests = arguments.length <= 0 || arguments[0] === undefined ? [] : arguments[0];
+      var suggests = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
 
       var activeSuggest = this.state.activeSuggest;
 
@@ -1027,6 +1024,8 @@ var Geosuggest = function (_React$Component) {
           suggestionsList = _react2.default.createElement(_suggestList2.default, { isHidden: this.state.isSuggestsHidden,
         style: this.props.style.suggests,
         suggestItemStyle: this.props.style.suggestItem,
+        suggestListClassName: this.props.suggestListClassName,
+        suggestItemClassName: this.props.suggestItemClassName,
         suggests: this.state.suggests,
         activeSuggest: this.state.activeSuggest,
         onSuggestNoResults: this.onSuggestNoResults,
@@ -1070,7 +1069,7 @@ Geosuggest.defaultProps = _defaults2.default;
 
 exports.default = Geosuggest;
 
-},{"./defaults":7,"./filter-input-attributes":8,"./input":9,"./prop-types":10,"./suggest-list":12,"classnames":1,"lodash.debounce":3}],7:[function(require,module,exports){
+},{"./defaults":7,"./filter-input-attributes":8,"./input":9,"./prop-types":10,"./suggest-list":12,"classnames":1,"lodash.debounce":2}],7:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -1087,6 +1086,8 @@ exports.default = {
   disabled: false,
   className: '',
   inputClassName: '',
+  suggestListClassName: '',
+  suggestItemClassName: '',
   location: null,
   radius: null,
   bounds: null,
@@ -1327,7 +1328,7 @@ Input.defaultProps = {
 
 exports.default = Input;
 
-},{"./filter-input-attributes":8,"classnames":1,"react-addons-shallow-compare":4}],10:[function(require,module,exports){
+},{"./filter-input-attributes":8,"classnames":1,"react-addons-shallow-compare":3}],10:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -1350,6 +1351,8 @@ exports.default = {
   disabled: _react2.default.PropTypes.bool,
   className: _react2.default.PropTypes.string,
   inputClassName: _react2.default.PropTypes.string,
+  suggestListClassName: _react2.default.PropTypes.string,
+  suggestItemClassName: _react2.default.PropTypes.string,
   location: _react2.default.PropTypes.object,
   radius: _react2.default.PropTypes.oneOfType([_react2.default.PropTypes.string, _react2.default.PropTypes.number]),
   bounds: _react2.default.PropTypes.object,
@@ -1453,7 +1456,7 @@ var SuggestItem = function (_React$Component) {
      * @return {Function} The React element to render
      */
     value: function render() {
-      var classes = (0, _classnames2.default)('geosuggest-item', this.props.className, { 'geosuggest-item--active': this.props.isActive });
+      var classes = (0, _classnames2.default)('geosuggest-item', this.props.className, this.props.suggestItemClassName, { 'geosuggest-item--active': this.props.isActive });
 
       return _react2.default.createElement(
         'li',
@@ -1483,7 +1486,7 @@ SuggestItem.defaultProps = {
   suggest: {}
 };
 
-},{"classnames":1,"react-addons-shallow-compare":4}],12:[function(require,module,exports){
+},{"classnames":1,"react-addons-shallow-compare":3}],12:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -1580,7 +1583,7 @@ var SuggestList = function (_React$Component) {
     value: function render() {
       var _this2 = this;
 
-      var classes = (0, _classnames2.default)('geosuggest__suggests', { 'geosuggest__suggests--hidden': this.isHidden() });
+      var classes = (0, _classnames2.default)('geosuggest__suggests', this.props.suggestListClassName, { 'geosuggest__suggests--hidden': this.isHidden() });
 
       return _react2.default.createElement(
         'ul',
@@ -1592,6 +1595,7 @@ var SuggestList = function (_React$Component) {
             className: suggest.className,
             suggest: suggest,
             style: _this2.props.suggestItemStyle,
+            suggestItemClassName: _this2.props.suggestItemClassName,
             isActive: isActive,
             onMouseDown: _this2.props.onSuggestMouseDown,
             onMouseOut: _this2.props.onSuggestMouseOut,
@@ -1616,5 +1620,5 @@ SuggestList.defaultProps = {
   suggests: []
 };
 
-},{"./suggest-item":11,"classnames":1,"react-addons-shallow-compare":4}]},{},[6])(6)
+},{"./suggest-item":11,"classnames":1,"react-addons-shallow-compare":3}]},{},[6])(6)
 });
